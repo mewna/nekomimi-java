@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.core.json.JsonObject;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 
@@ -14,6 +15,7 @@ import java.beans.Transient;
  * @since 10/31/18.
  */
 @Getter(onMethod_ = {@JsonProperty})
+@Builder(toBuilder = true)
 @Accessors(fluent = true)
 @SuppressWarnings("WeakerAccess")
 @AllArgsConstructor

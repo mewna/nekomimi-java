@@ -30,6 +30,7 @@ public class NekoPlayerListener extends AudioEventAdapter {
                 new JsonObject()
                         .put("type", TrackEventType.AUDIO_TRACK_START.name())
                         .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_START, this.track).toJson()));
+        nekomimi.queue(this.track.context().guild()).currentAudioTrack(track);
     }
     
     @Override
@@ -38,6 +39,7 @@ public class NekoPlayerListener extends AudioEventAdapter {
                 .guildId(this.track.context().guild())
                 .userId(System.getenv("CLIENT_ID"))
                 .build());
+        nekomimi.queue(this.track.context().guild()).currentAudioTrack(null);
         nekomimi.playNextInQueue(this.track.context().guild());
     }
     

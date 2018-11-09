@@ -1,9 +1,11 @@
 package com.mewna.nekomimi;
 
+import com.mewna.nekomimi.NekoTrackEvent.TrackEventType;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
+import gg.amy.singyeong.QueryBuilder;
 import gg.amy.singyeong.SingyeongClient;
 import gg.amy.singyeong.SingyeongType;
 import io.vertx.core.Vertx;
@@ -92,16 +94,42 @@ public final class Nekomimi {
                     break;
                 }
                 case "VOICE_QUEUE": {
-                    final String url = payload.getString("url");
                     final NekoTrackContext ctx = payload.getJsonObject("context").mapTo(NekoTrackContext.class);
-                    // TODO: Differentiate between url and query
-                    playerManager.loadItem(url, new NekoTrackLoader(this, ctx));
+                    if(payload.containsKey("search")) {
+                        final String url = payload.getString("search");
+                        playerManager.loadItem("ytsearch:" + url, new NekoTrackLoader(this, ctx, true));
+                    } else if(payload.containsKey("url")) {
+                        final String url = payload.getString("url");
+                        playerManager.loadItem(url, new NekoTrackLoader(this, ctx, false));
+                    }
                     break;
                 }
                 case "VOICE_PLAY": {
                     final String guildId = payload.getString("guild_id");
                     playNextInQueue(guildId);
-                    
+                    break;
+                }
+                case "VOICE_NOW_PLAYING": {
+                    final NekoTrackContext ctx = payload.getJsonObject("context").mapTo(NekoTrackContext.class);
+                    final String guildId = payload.getString("guild_id");
+                    final NekoTrackQueue queue = queues.computeIfAbsent(guildId, __ -> new NekoTrackQueue(guildId));
+                    NekoTrack currentTrack = queue.currentTrack();
+                    if(queue.currentAudioTrack() != null) {
+                        // Backfill a bit of data
+                        currentTrack = currentTrack.toBuilder()
+                                .position(queue.currentAudioTrack().getPosition())
+                                .context(ctx)
+                                .build();
+                    } else {
+                        currentTrack = NekoTrack.builder()
+                                .context(ctx)
+                                .build();
+                    }
+                    singyeong.send("mewna-backend", new QueryBuilder().build(),
+                            new JsonObject()
+                                    .put("type", TrackEventType.AUDIO_TRACK_NOW_PLAYING.name())
+                                    .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_NOW_PLAYING, currentTrack)
+                                            .toJson()));
                     break;
                 }
                 default: {
@@ -115,16 +143,27 @@ public final class Nekomimi {
                 .thenAccept(__ -> logger.info("Welcome to nekomimi!"));
     }
     
+    public NekoTrackQueue queue(final String guildId) {
+        return queues.putIfAbsent(guildId, new NekoTrackQueue(guildId));
+    }
+    
     @SuppressWarnings("WeakerAccess")
     public void playNextInQueue(final String guildId) {
         final NekoTrackQueue queue = queues.get(guildId);
-        
+        // we fetch it here since calling hasNext() will null it
+        final NekoTrack currentTrack = queue.currentTrack();
+    
         if(queue.hasNext()) {
             final NekoTrack track = queue.nextTrack();
             playerManager.loadItem(track.url(), new NekoPlayerLoader(this, track));
         } else {
-            // TODO: Emit
-            logger.warn("Queue empty for guild {}", guildId);
+            singyeong.send("mewna-backend", new QueryBuilder().build(),
+                    new JsonObject()
+                            .put("type", TrackEventType.AUDIO_QUEUE_END.name())
+                            .put("data", new NekoTrackEvent(TrackEventType.AUDIO_QUEUE_END,
+                                    new NekoTrack(null,null,null,0L,0L,
+                                            currentTrack.context()))
+                                    .toJson()));
         }
     }
 }

@@ -2,22 +2,28 @@ package com.mewna.nekomimi;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.core.json.JsonObject;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.Accessors;
 
 /**
  * @author amy
  * @since 11/2/18.
  */
-@Getter
+@Getter(onMethod_ = {@JsonProperty})
+@Setter(onMethod_ = {@JsonProperty})
 @Accessors(fluent = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class NekoTrackEvent {
     @JsonProperty
-    private final TrackEventType type;
+    private TrackEventType type;
     @JsonProperty
-    private final NekoTrack track;
+    private NekoTrack track;
     @JsonProperty
-    private final long ts = System.currentTimeMillis();
+    private long ts = System.currentTimeMillis();
     
     public NekoTrackEvent(final TrackEventType type, final NekoTrack track) {
         this.type = type;
@@ -57,5 +63,13 @@ public class NekoTrackEvent {
          * Queue ended
          */
         AUDIO_QUEUE_END,
+        /**
+         * No matches for track load
+         */
+        AUDIO_TRACK_NO_MATCHES,
+        /**
+         * Many tracks loaded. Track count will be encoded in the track title.
+         */
+        AUDIO_TRACK_QUEUE_MANY,
     }
 }
