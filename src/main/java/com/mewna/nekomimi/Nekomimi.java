@@ -150,13 +150,13 @@ public final class Nekomimi {
     @SuppressWarnings("WeakerAccess")
     public void playNextInQueue(final String guildId) {
         final NekoTrackQueue queue = queues.get(guildId);
+        queue.currentAudioTrack().stop();
         // we fetch it here since calling hasNext() will null it
         final NekoTrack currentTrack = queue.currentTrack();
-    
         if(queue.hasNext()) {
             final NekoTrack track = queue.nextTrack();
             playerManager.loadItem(track.url(), new NekoPlayerLoader(this, track));
-        } else {
+        } else if(currentTrack != null) {
             singyeong.send("mewna-backend", new QueryBuilder().build(),
                     new JsonObject()
                             .put("type", TrackEventType.AUDIO_QUEUE_END.name())
