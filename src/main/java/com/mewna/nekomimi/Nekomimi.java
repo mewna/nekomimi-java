@@ -150,7 +150,9 @@ public final class Nekomimi {
     @SuppressWarnings("WeakerAccess")
     public void playNextInQueue(final String guildId) {
         final NekoTrackQueue queue = queues.get(guildId);
-        queue.currentAudioTrack().stop();
+        if(queue.currentAudioTrack() != null) {
+            queue.currentAudioTrack().stop();
+        }
         // we fetch it here since calling hasNext() will null it
         final NekoTrack currentTrack = queue.currentTrack();
         if(queue.hasNext()) {
