@@ -54,7 +54,7 @@ public final class Nekomimi {
         AudioSourceManagers.registerRemoteSources(playerManager);
         magma = MagmaApi.of(__ -> new NativeAudioSendFactory());
         
-        singyeong = new SingyeongClient(System.getenv("SINGYEONG_DSN"), vertx, "nekomimi");
+        singyeong = SingyeongClient.create(vertx, System.getenv("SINGYEONG_DSN"));
         
         singyeong.onEvent(dispatch -> {
             final JsonObject payload = dispatch.data();
@@ -143,6 +143,7 @@ public final class Nekomimi {
                 .thenAccept(__ -> logger.info("Welcome to nekomimi!"));
     }
     
+    @SuppressWarnings("WeakerAccess")
     public NekoTrackQueue queue(final String guildId) {
         return queues.putIfAbsent(guildId, new NekoTrackQueue(guildId));
     }
