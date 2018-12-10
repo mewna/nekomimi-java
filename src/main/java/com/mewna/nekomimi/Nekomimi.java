@@ -150,6 +150,9 @@ public final class Nekomimi {
     
     @SuppressWarnings("WeakerAccess")
     public void playNextInQueue(final String guildId) {
+        if(!guilds.contains(guildId)) {
+            return;
+        }
         final NekoTrackQueue queue = queues.get(guildId);
         if(queue.currentAudioTrack() != null) {
             queue.currentAudioTrack().stop();
