@@ -50,4 +50,8 @@ public class NekoTrackQueue {
         }
         return !queue.isEmpty();
     }
+    
+    public long countTracks() {
+        return queue.size();
+    }
 }
