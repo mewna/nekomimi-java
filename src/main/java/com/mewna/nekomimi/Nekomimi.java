@@ -46,7 +46,7 @@ public final class Nekomimi {
     
     private Nekomimi() {
         if(System.getenv("STATSD_ENABLED") != null) {
-            statsClient = new NonBlockingStatsDClient("v2", System.getenv("STATSD_HOST"), 8125);
+            statsClient = new NonBlockingStatsDClient("v2.nekomimi", System.getenv("STATSD_HOST"), 8125);
         } else {
             statsClient = new NoOpStatsDClient();
         }
