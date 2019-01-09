@@ -123,6 +123,14 @@ public final class Nekomimi {
                     playNextInQueue(guildId);
                     break;
                 }
+                case "VOICE_SKIP": {
+                    final String guildId = payload.getString("guild_id");
+                    final NekoTrackQueue queue = queues.get(guildId);
+                    if(queue.currentAudioTrack() != null) {
+                        playNextInQueue(guildId);
+                    }
+                    break;
+                }
                 case "VOICE_NOW_PLAYING": {
                     final NekoTrackContext ctx = payload.getJsonObject("context").mapTo(NekoTrackContext.class);
                     final String guildId = payload.getString("guild_id");
