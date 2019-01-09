@@ -88,7 +88,7 @@ public final class Nekomimi {
                     guilds.add(guildId);
                     singyeong.updateMetadata("guilds", SingyeongType.LIST, new JsonArray(new ArrayList<>(guilds)));
                     
-                    statsClient.gauge("nekomimi.activeVcs", guilds.size());
+                    statsClient.gauge("activeVcs", guilds.size());
                     
                     queues.putIfAbsent(guildId, new NekoTrackQueue(guildId));
                     break;
@@ -103,7 +103,7 @@ public final class Nekomimi {
                     magma.removeSendHandler(member);
                     magma.closeConnection(member);
                     guilds.remove(guildId);
-                    statsClient.gauge("nekomimi.activeVcs", guilds.size());
+                    statsClient.gauge("activeVcs", guilds.size());
                     singyeong.updateMetadata("guilds", SingyeongType.LIST, new JsonArray(new ArrayList<>(guilds)));
                     break;
                 }
@@ -164,7 +164,7 @@ public final class Nekomimi {
     
     @SuppressWarnings("WeakerAccess")
     public void playNextInQueue(final String guildId) {
-        statsClient.gauge("nekomimi.playingTracks", queues.values().stream()
+        statsClient.gauge("playingTracks", queues.values().stream()
                 .filter(e -> e.currentAudioTrack() != null).count());
         if(!guilds.contains(guildId)) {
             return;
