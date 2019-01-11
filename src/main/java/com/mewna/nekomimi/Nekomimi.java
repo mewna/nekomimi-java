@@ -67,6 +67,14 @@ public final class Nekomimi {
         
         singyeong = SingyeongClient.create(vertx, System.getenv("SINGYEONG_DSN"));
         
+        vertx.setPeriodic(10_000L, __ -> {
+            statsClient.gauge("activeVcs", guilds.size());
+            statsClient.gauge("playingTracks", queues.values().stream()
+                    .filter(e -> e.currentAudioTrack() != null).count());
+            statsClient.gauge("loadedTracks", queues.values().stream()
+                    .mapToLong(NekoTrackQueue::countTracks).sum());
+        });
+        
         singyeong.onEvent(dispatch -> {
             final JsonObject payload = dispatch.data();
             switch(payload.getString("type")) {
