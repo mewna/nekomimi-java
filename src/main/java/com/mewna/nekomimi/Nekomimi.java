@@ -119,9 +119,11 @@ public final class Nekomimi {
                     final NekoTrackContext ctx = payload.getJsonObject("context").mapTo(NekoTrackContext.class);
                     if(payload.containsKey("search")) {
                         final String url = payload.getString("search");
+                        logger.debug("Got search queue: " + url);
                         playerManager.loadItem("ytsearch:" + url, new NekoTrackLoader(this, ctx, true));
                     } else if(payload.containsKey("url")) {
                         final String url = payload.getString("url");
+                        logger.debug("Got url queue: " + url);
                         playerManager.loadItem(url, new NekoTrackLoader(this, ctx, false));
                     }
                     break;
