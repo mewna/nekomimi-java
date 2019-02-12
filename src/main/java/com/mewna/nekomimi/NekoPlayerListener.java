@@ -26,7 +26,7 @@ public class NekoPlayerListener extends AudioEventAdapter {
     
     @Override
     public void onTrackStart(final AudioPlayer player, final AudioTrack track) {
-        nekomimi.singyeong().send("mewna-backend", new QueryBuilder().build(),
+        nekomimi.singyeong().send("backend", new QueryBuilder().build(),
                 new JsonObject()
                         .put("type", TrackEventType.AUDIO_TRACK_START.name())
                         .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_START, this.track).toJson()));

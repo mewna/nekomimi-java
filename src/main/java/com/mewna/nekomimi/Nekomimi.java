@@ -157,7 +157,7 @@ public final class Nekomimi {
                                 .context(ctx)
                                 .build();
                     }
-                    singyeong.send("mewna-backend", new QueryBuilder().build(),
+                    singyeong.send("backend", new QueryBuilder().build(),
                             new JsonObject()
                                     .put("type", TrackEventType.AUDIO_TRACK_NOW_PLAYING.name())
                                     .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_NOW_PLAYING, currentTrack)
@@ -198,7 +198,7 @@ public final class Nekomimi {
             final NekoTrack track = queue.nextTrack();
             playerManager.loadItem(track.url(), new NekoPlayerLoader(this, track));
         } else if(currentTrack != null) {
-            singyeong.send("mewna-backend", new QueryBuilder().build(),
+            singyeong.send("backend", new QueryBuilder().build(),
                     new JsonObject()
                             .put("type", TrackEventType.AUDIO_QUEUE_END.name())
                             .put("data", new NekoTrackEvent(TrackEventType.AUDIO_QUEUE_END,
