@@ -76,6 +76,7 @@ public class NekoTrackLoader implements AudioLoadResultHandler {
                                 .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_NO_MATCHES, null).toJson()));
             } else {
                 final List<NekoTrack> nts = tracks.stream()
+                        .limit(50)
                         .map(AudioTrack::getInfo)
                         .map(e -> new NekoTrack(e.uri, e.title, e.author, e.length, 0L, ctx))
                         .collect(Collectors.toList());
