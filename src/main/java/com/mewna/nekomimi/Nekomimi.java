@@ -189,6 +189,9 @@ public final class Nekomimi {
         }
         final NekoTrackQueue queue = queues.get(guildId);
         if(queue.currentAudioTrack() != null) {
+            if(queue.currentPlayer() != null) {
+                queue.currentPlayer().removeListener(queue.currentListener());
+            }
             queue.currentAudioTrack().stop();
             magma.removeSendHandler(MagmaMember.builder().userId(USER_ID).guildId(guildId).build());
         }

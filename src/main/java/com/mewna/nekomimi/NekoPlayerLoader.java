@@ -27,12 +27,15 @@ public class NekoPlayerLoader implements AudioLoadResultHandler {
     @Override
     public void trackLoaded(final AudioTrack track) {
         final AudioPlayer player = nekomimi.playerManager().createPlayer();
-        player.addListener(new NekoPlayerListener(nekomimi, this.track));
+        final NekoPlayerListener listener = new NekoPlayerListener(nekomimi, this.track);
+        player.addListener(listener);
         nekomimi.magma().setSendHandler(MagmaMember.builder()
                         .userId(System.getenv("CLIENT_ID"))
                         .guildId(this.track.context().guild()).build(),
                 new NekoSendHandler(player));
         player.playTrack(track);
+        nekomimi.queue(this.track.context().guild()).currentPlayer(player);
+        nekomimi.queue(this.track.context().guild()).currentListener(listener);
     }
     
     @Override

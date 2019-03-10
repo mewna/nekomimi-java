@@ -1,5 +1,6 @@
 package com.mewna.nekomimi;
 
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +28,12 @@ public class NekoTrackQueue {
     @Getter
     @Setter
     private AudioTrack currentAudioTrack;
+    @Getter
+    @Setter
+    private AudioPlayer currentPlayer;
+    @Getter
+    @Setter
+    private NekoPlayerListener currentListener;
     @Getter
     private String lastChannel;
     
