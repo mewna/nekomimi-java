@@ -1,7 +1,7 @@
-package com.mewna.nekomimi.handler;
+package com.mewna.nekomimi.event.handler;
 
 import com.mewna.nekomimi.Nekomimi;
-import com.mewna.nekomimi.message.VoiceLeave;
+import com.mewna.nekomimi.event.VoiceLeave;
 import gg.amy.singyeong.client.SingyeongType;
 import io.vertx.core.json.JsonArray;
 import lombok.RequiredArgsConstructor;

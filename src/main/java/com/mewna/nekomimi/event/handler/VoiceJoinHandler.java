@@ -1,7 +1,7 @@
-package com.mewna.nekomimi.handler;
+package com.mewna.nekomimi.event.handler;
 
 import com.mewna.nekomimi.Nekomimi;
-import com.mewna.nekomimi.message.VoiceJoin;
+import com.mewna.nekomimi.event.VoiceJoin;
 import com.mewna.nekomimi.track.NekoTrackQueue;
 import gg.amy.singyeong.client.SingyeongType;
 import io.vertx.core.json.JsonArray;

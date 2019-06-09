@@ -1,4 +1,4 @@
-package com.mewna.nekomimi.message;
+package com.mewna.nekomimi.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.mewna.nekomimi.track.NekoTrackContext;

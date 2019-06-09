@@ -1,7 +1,7 @@
-package com.mewna.nekomimi.handler;
+package com.mewna.nekomimi.event.handler;
 
 import com.mewna.nekomimi.Nekomimi;
-import com.mewna.nekomimi.message.VoiceQueue;
+import com.mewna.nekomimi.event.VoiceQueue;
 import com.mewna.nekomimi.track.NekoTrackContext;
 import com.mewna.nekomimi.track.NekoTrackLoader;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
-package com.mewna.nekomimi.handler;
+package com.mewna.nekomimi.event.handler;
 
 import com.mewna.nekomimi.Nekomimi;
-import com.mewna.nekomimi.message.VoicePlay;
+import com.mewna.nekomimi.event.VoicePlay;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

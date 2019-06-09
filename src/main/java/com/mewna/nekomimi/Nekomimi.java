@@ -1,8 +1,8 @@
 package com.mewna.nekomimi;
 
 import com.mewna.nekomimi.api.Api;
-import com.mewna.nekomimi.handler.*;
-import com.mewna.nekomimi.message.*;
+import com.mewna.nekomimi.event.*;
+import com.mewna.nekomimi.event.handler.*;
 import com.mewna.nekomimi.player.NekoPlayerLoader;
 import com.mewna.nekomimi.track.NekoTrack;
 import com.mewna.nekomimi.track.NekoTrackEvent;
