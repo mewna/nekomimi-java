@@ -18,6 +18,7 @@ import com.timgroup.statsd.StatsDClient;
 import gg.amy.singyeong.SingyeongClient;
 import gg.amy.singyeong.client.query.QueryBuilder;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.experimental.Accessors;
@@ -41,7 +42,7 @@ public final class Nekomimi {
     @Getter
     private final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
     @Getter
-    private final Vertx vertx = Vertx.vertx();
+    private final Vertx vertx = Vertx.vertx(new VertxOptions().setEventLoopPoolSize(2).setWorkerPoolSize(4));
     private final Logger logger = LoggerFactory.getLogger(getClass());
     @Getter
     private final Set<String> guilds = new HashSet<>();
