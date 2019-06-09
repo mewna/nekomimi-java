@@ -1,4 +1,4 @@
-package com.mewna.nekomimi;
+package com.mewna.nekomimi.io;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame;

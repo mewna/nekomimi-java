@@ -1,7 +1,8 @@
-package com.mewna.nekomimi;
+package com.mewna.nekomimi.track;
 
 import com.google.common.collect.ImmutableList;
-import com.mewna.nekomimi.NekoTrackEvent.TrackEventType;
+import com.mewna.nekomimi.Nekomimi;
+import com.mewna.nekomimi.track.NekoTrackEvent.TrackEventType;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;

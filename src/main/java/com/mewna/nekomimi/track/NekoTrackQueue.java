@@ -1,5 +1,6 @@
-package com.mewna.nekomimi;
+package com.mewna.nekomimi.track;
 
+import com.mewna.nekomimi.player.NekoPlayerListener;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import lombok.Getter;
@@ -16,7 +17,6 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  * @since 10/31/18.
  */
 @Accessors(fluent = true)
-@SuppressWarnings("WeakerAccess")
 public class NekoTrackQueue {
     @Getter
     @SuppressWarnings({"FieldCanBeLocal", "unused"})

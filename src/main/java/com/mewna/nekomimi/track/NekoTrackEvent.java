@@ -1,4 +1,4 @@
-package com.mewna.nekomimi;
+package com.mewna.nekomimi.track;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.core.json.JsonObject;
@@ -34,6 +34,7 @@ public class NekoTrackEvent {
         return JsonObject.mapFrom(this);
     }
     
+    @SuppressWarnings("unused")
     public enum TrackEventType {
         /**
          * Track started playing

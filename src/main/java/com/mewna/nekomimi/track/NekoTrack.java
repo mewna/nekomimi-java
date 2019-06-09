@@ -1,14 +1,10 @@
-package com.mewna.nekomimi;
+package com.mewna.nekomimi.track;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.vertx.core.json.JsonObject;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.experimental.Accessors;
-
-import java.beans.Transient;
 
 /**
  * @author amy
@@ -17,7 +13,6 @@ import java.beans.Transient;
 @Getter(onMethod_ = {@JsonProperty})
 @Builder(toBuilder = true)
 @Accessors(fluent = true)
-@SuppressWarnings("WeakerAccess")
 @AllArgsConstructor
 public class NekoTrack {
     /**
@@ -56,10 +51,4 @@ public class NekoTrack {
      */
     @JsonProperty
     private final NekoTrackContext context;
-    
-    @Transient
-    @JsonIgnore
-    public JsonObject toJson() {
-        return JsonObject.mapFrom(this);
-    }
 }

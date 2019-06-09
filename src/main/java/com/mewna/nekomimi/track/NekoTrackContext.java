@@ -1,4 +1,4 @@
-package com.mewna.nekomimi;
+package com.mewna.nekomimi.track;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -12,6 +12,7 @@ import lombok.experimental.Accessors;
 @Getter(onMethod_ = {@JsonProperty})
 @Setter(onMethod_ = {@JsonProperty})
 @Accessors(fluent = true)
+@SuppressWarnings("unused")
 public final class NekoTrackContext {
     @JsonProperty
     private String user;

@@ -1,6 +1,8 @@
 package com.mewna.nekomimi;
 
-import com.mewna.nekomimi.NekoTrackEvent.TrackEventType;
+import com.mewna.nekomimi.player.NekoPlayerLoader;
+import com.mewna.nekomimi.track.*;
+import com.mewna.nekomimi.track.NekoTrackEvent.TrackEventType;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -38,11 +40,11 @@ public final class Nekomimi {
     @Getter
     private final Map<String, NekoTrackQueue> queues = new ConcurrentHashMap<>();
     @Getter
+    private final StatsDClient statsClient;
+    @Getter
     private MagmaApi magma;
     @Getter
     private SingyeongClient singyeong;
-    @Getter
-    private final StatsDClient statsClient;
     
     private Nekomimi() {
         if(System.getenv("STATSD_ENABLED") != null) {
@@ -56,7 +58,6 @@ public final class Nekomimi {
         new Nekomimi().start();
     }
     
-    @SuppressWarnings("WeakerAccess")
     public void loadTracks(final String guildId, final Collection<NekoTrack> tracks) {
         queues.computeIfAbsent(guildId, __ -> new NekoTrackQueue(guildId)).loadTracks(tracks);
     }
@@ -175,12 +176,10 @@ public final class Nekomimi {
                 .thenAccept(__ -> logger.info("Welcome to nekomimi!"));
     }
     
-    @SuppressWarnings("WeakerAccess")
     public NekoTrackQueue queue(final String guildId) {
         return queues.putIfAbsent(guildId, new NekoTrackQueue(guildId));
     }
     
-    @SuppressWarnings("WeakerAccess")
     public void playNextInQueue(final String guildId) {
         statsClient.gauge("playingTracks", queues.values().stream()
                 .filter(e -> e.currentAudioTrack() != null).count());
@@ -205,7 +204,7 @@ public final class Nekomimi {
                     new JsonObject()
                             .put("type", TrackEventType.AUDIO_QUEUE_END.name())
                             .put("data", new NekoTrackEvent(TrackEventType.AUDIO_QUEUE_END,
-                                    new NekoTrack(null,null,null,0L,0L,
+                                    new NekoTrack(null, null, null, 0L, 0L,
                                             currentTrack.context()))
                                     .toJson()));
         }

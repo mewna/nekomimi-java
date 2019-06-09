@@ -1,6 +1,9 @@
-package com.mewna.nekomimi;
+package com.mewna.nekomimi.player;
 
-import com.mewna.nekomimi.NekoTrackEvent.TrackEventType;
+import com.mewna.nekomimi.track.NekoTrack;
+import com.mewna.nekomimi.track.NekoTrackEvent;
+import com.mewna.nekomimi.track.NekoTrackEvent.TrackEventType;
+import com.mewna.nekomimi.Nekomimi;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
