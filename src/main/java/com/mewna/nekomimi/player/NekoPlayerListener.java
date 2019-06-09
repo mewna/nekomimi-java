@@ -9,7 +9,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import gg.amy.singyeong.QueryBuilder;
+import gg.amy.singyeong.client.query.QueryBuilder;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class NekoPlayerListener extends AudioEventAdapter {
     
     @Override
     public void onTrackStart(final AudioPlayer player, final AudioTrack track) {
-        nekomimi.singyeong().send("backend", new QueryBuilder().build(),
+        nekomimi.singyeong().send(new QueryBuilder().target("backend").build(),
                 new JsonObject()
                         .put("type", TrackEventType.AUDIO_TRACK_START.name())
                         .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_START, this.track).toJson()));

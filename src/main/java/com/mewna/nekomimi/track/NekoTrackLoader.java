@@ -8,7 +8,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackInfo;
-import gg.amy.singyeong.QueryBuilder;
+import gg.amy.singyeong.client.query.QueryBuilder;
 import io.vertx.core.json.JsonObject;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,10 +36,10 @@ public class NekoTrackLoader implements AudioLoadResultHandler {
         nekomimi.loadTracks(ctx.guild(), ImmutableList.of(nt));
         nekomimi.statsClient().gauge("loadedTracks", nekomimi.queues().values().stream()
                 .mapToLong(NekoTrackQueue::countTracks).sum());
-        nekomimi.singyeong().send("backend", new QueryBuilder().build(),
+        nekomimi.singyeong().send(new QueryBuilder().target("backend").build(),
                 new JsonObject()
-                .put("type", TrackEventType.AUDIO_TRACK_QUEUE.name())
-                .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_QUEUE, nt).toJson()));
+                        .put("type", TrackEventType.AUDIO_TRACK_QUEUE.name())
+                        .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_QUEUE, nt).toJson()));
     }
     
     @Override
@@ -49,7 +49,7 @@ public class NekoTrackLoader implements AudioLoadResultHandler {
             if(tracks.isEmpty()) {
                 nekomimi.statsClient().gauge("loadedTracks", nekomimi.queues().values().stream()
                         .mapToLong(NekoTrackQueue::countTracks).sum());
-                nekomimi.singyeong().send("backend", new QueryBuilder().build(),
+                nekomimi.singyeong().send(new QueryBuilder().target("backend").build(),
                         new JsonObject()
                                 .put("type", TrackEventType.AUDIO_TRACK_QUEUE.name())
                                 .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_NO_MATCHES, null).toJson()));
@@ -61,7 +61,7 @@ public class NekoTrackLoader implements AudioLoadResultHandler {
                 nekomimi.loadTracks(ctx.guild(), ImmutableList.of(nt));
                 nekomimi.statsClient().gauge("loadedTracks", nekomimi.queues().values().stream()
                         .mapToLong(NekoTrackQueue::countTracks).sum());
-                nekomimi.singyeong().send("backend", new QueryBuilder().build(),
+                nekomimi.singyeong().send(new QueryBuilder().target("backend").build(),
                         new JsonObject()
                                 .put("type", TrackEventType.AUDIO_TRACK_QUEUE.name())
                                 .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_QUEUE, nt).toJson()));
@@ -71,7 +71,7 @@ public class NekoTrackLoader implements AudioLoadResultHandler {
             if(tracks.isEmpty()) {
                 nekomimi.statsClient().gauge("loadedTracks", nekomimi.queues().values().stream()
                         .mapToLong(NekoTrackQueue::countTracks).sum());
-                nekomimi.singyeong().send("backend", new QueryBuilder().build(),
+                nekomimi.singyeong().send(new QueryBuilder().target("backend").build(),
                         new JsonObject()
                                 .put("type", TrackEventType.AUDIO_TRACK_QUEUE.name())
                                 .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_NO_MATCHES, null).toJson()));
@@ -84,11 +84,11 @@ public class NekoTrackLoader implements AudioLoadResultHandler {
                 nekomimi.loadTracks(ctx.guild(), ImmutableList.copyOf(nts));
                 nekomimi.statsClient().gauge("loadedTracks", nekomimi.queues().values().stream()
                         .mapToLong(NekoTrackQueue::countTracks).sum());
-                nekomimi.singyeong().send("backend", new QueryBuilder().build(),
+                nekomimi.singyeong().send(new QueryBuilder().target("backend").build(),
                         new JsonObject()
                                 .put("type", TrackEventType.AUDIO_TRACK_QUEUE_MANY.name())
                                 .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_QUEUE_MANY,
-                                        new NekoTrack(null,"" + nts.size(),null,0L, 0L, ctx))
+                                        new NekoTrack(null, "" + nts.size(), null, 0L, 0L, ctx))
                                         .toJson()));
             }
         }
@@ -96,7 +96,7 @@ public class NekoTrackLoader implements AudioLoadResultHandler {
     
     @Override
     public void noMatches() {
-        nekomimi.singyeong().send("backend", new QueryBuilder().build(),
+        nekomimi.singyeong().send(new QueryBuilder().target("backend").build(),
                 new JsonObject()
                         .put("type", TrackEventType.AUDIO_TRACK_QUEUE.name())
                         .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_NO_MATCHES, null).toJson()));

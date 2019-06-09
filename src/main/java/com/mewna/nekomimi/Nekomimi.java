@@ -1,10 +1,13 @@
 package com.mewna.nekomimi;
 
 import com.mewna.nekomimi.api.Api;
+import com.mewna.nekomimi.handler.*;
 import com.mewna.nekomimi.message.*;
 import com.mewna.nekomimi.player.NekoPlayerLoader;
-import com.mewna.nekomimi.track.*;
+import com.mewna.nekomimi.track.NekoTrack;
+import com.mewna.nekomimi.track.NekoTrackEvent;
 import com.mewna.nekomimi.track.NekoTrackEvent.TrackEventType;
+import com.mewna.nekomimi.track.NekoTrackQueue;
 import com.sedmelluq.discord.lavaplayer.jdaudp.NativeAudioSendFactory;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -13,19 +16,19 @@ import com.timgroup.statsd.NoOpStatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import gg.amy.singyeong.SingyeongClient;
-import gg.amy.singyeong.client.SingyeongType;
 import gg.amy.singyeong.client.query.QueryBuilder;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import space.npstr.magma.*;
+import space.npstr.magma.MagmaApi;
+import space.npstr.magma.MagmaMember;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 /**
  * @author amy
@@ -33,17 +36,32 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Accessors(fluent = true)
 public final class Nekomimi {
-    private static final String USER_ID = System.getenv("CLIENT_ID");
+    public static final String USER_ID = System.getenv("CLIENT_ID");
     @Getter
     private final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
     @Getter
     private final Vertx vertx = Vertx.vertx();
     private final Logger logger = LoggerFactory.getLogger(getClass());
+    @Getter
     private final Set<String> guilds = new HashSet<>();
     @Getter
     private final Map<String, NekoTrackQueue> queues = new ConcurrentHashMap<>();
     @Getter
     private final StatsDClient statsClient;
+    private final Map<Class<?>, Consumer<?>> handlers = new HashMap<>() {{
+        put(VoiceJoin.class, new VoiceJoinHandler(Nekomimi.this));
+        put(VoiceLeave.class, new VoiceLeaveHandler(Nekomimi.this));
+        put(VoicePlay.class, new VoicePlayHandler(Nekomimi.this));
+        put(VoiceQueue.class, new VoiceQueueHandler(Nekomimi.this));
+        put(VoiceSkip.class, new VoiceSkipHandler(Nekomimi.this));
+    }};
+    private final Map<String, Class<?>> typeMap = new HashMap<>() {{
+        put("VOICE_JOIN", VoiceJoin.class);
+        put("VOICE_LEAVE", VoiceLeave.class);
+        put("VOICE_PLAY", VoicePlay.class);
+        put("VOICE_QUEUE", VoiceQueue.class);
+        put("VOICE_SKIP", VoiceSkip.class);
+    }};
     @Getter
     private MagmaApi magma;
     @Getter
@@ -61,8 +79,20 @@ public final class Nekomimi {
         new Nekomimi().start();
     }
     
+    @SuppressWarnings("unchecked")
+    private <T> Consumer<T> handler(final Class<T> cls) {
+        return (Consumer<T>) handlers.get(cls);
+    }
+    
     public void loadTracks(final String guildId, final Collection<NekoTrack> tracks) {
         queues.computeIfAbsent(guildId, __ -> new NekoTrackQueue(guildId)).loadTracks(tracks);
+    }
+    
+    private <T> void handleEvent(final String type, final JsonObject payload) {
+        @SuppressWarnings("unchecked")
+        final Class<T> eventClass = (Class<T>) typeMap.get(type);
+        final T event = payload.mapTo(eventClass);
+        handler(eventClass).accept(event);
     }
     
     private void start() {
@@ -81,76 +111,8 @@ public final class Nekomimi {
         
         singyeong.onEvent(dispatch -> {
             final JsonObject payload = dispatch.data();
-            switch(payload.getString("type")) {
-                case "VOICE_JOIN": {
-                    final var voiceJoin = payload.mapTo(VoiceJoin.class);
-                    final Member member = MagmaMember.builder()
-                            .guildId(voiceJoin.guildId())
-                            .userId(USER_ID)
-                            .build();
-                    final ServerUpdate serverUpdate = MagmaServerUpdate.builder()
-                            .sessionId(voiceJoin.sessionId())
-                            .endpoint(voiceJoin.endpoint())
-                            .token(voiceJoin.token())
-                            .build();
-                    
-                    logger.info("Got voice join to {} {}", member, serverUpdate);
-                    magma.provideVoiceServerUpdate(member, serverUpdate);
-                    
-                    guilds.add(voiceJoin.guildId());
-                    singyeong.updateMetadata("guilds", SingyeongType.LIST, new JsonArray(new ArrayList<>(guilds)));
-                    
-                    statsClient.gauge("activeVcs", guilds.size());
-                    
-                    queues.putIfAbsent(voiceJoin.guildId(), new NekoTrackQueue(voiceJoin.guildId()));
-                    break;
-                }
-                case "VOICE_LEAVE": {
-                    final var voiceLeave = payload.mapTo(VoiceLeave.class);
-                    final Member member = MagmaMember.builder()
-                            .guildId(voiceLeave.guildId())
-                            .userId(USER_ID)
-                            .build();
-                    logger.info("Got voice leave for {}", member);
-                    magma.removeSendHandler(member);
-                    magma.closeConnection(member);
-                    guilds.remove(voiceLeave.guildId());
-                    statsClient.gauge("activeVcs", guilds.size());
-                    singyeong.updateMetadata("guilds", SingyeongType.LIST, new JsonArray(new ArrayList<>(guilds)));
-                    break;
-                }
-                case "VOICE_QUEUE": {
-                    final var voiceQueue = payload.mapTo(VoiceQueue.class);
-                    final NekoTrackContext ctx = voiceQueue.context();
-                    if(voiceQueue.search() != null) {
-                        final String search = voiceQueue.search();
-                        logger.debug("Got search queue: " + search);
-                        playerManager.loadItem("ytsearch:" + search, new NekoTrackLoader(this, ctx, true));
-                    } else {
-                        final String url = voiceQueue.url();
-                        logger.debug("Got url queue: " + url);
-                        playerManager.loadItem(url, new NekoTrackLoader(this, ctx, false));
-                    }
-                    break;
-                }
-                case "VOICE_PLAY": {
-                    final var voicePlay = payload.mapTo(VoicePlay.class);
-                    playNextInQueue(voicePlay.guildId());
-                    break;
-                }
-                case "VOICE_SKIP": {
-                    final var voiceSkip = payload.mapTo(VoiceSkip.class);
-                    final NekoTrackQueue queue = queues.get(voiceSkip.guildId());
-                    if(queue.currentAudioTrack() != null) {
-                        playNextInQueue(voiceSkip.guildId());
-                    }
-                    break;
-                }
-                default: {
-                    logger.warn("UNKNOWN EVENT: {}", payload.getString("type"));
-                    break;
-                }
-            }
+            final String type = payload.getString("type");
+            handleEvent(type, payload);
         });
         
         new Api(this).setup();
