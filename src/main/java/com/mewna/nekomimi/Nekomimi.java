@@ -1,5 +1,7 @@
 package com.mewna.nekomimi;
 
+import com.mewna.nekomimi.api.Api;
+import com.mewna.nekomimi.message.*;
 import com.mewna.nekomimi.player.NekoPlayerLoader;
 import com.mewna.nekomimi.track.*;
 import com.mewna.nekomimi.track.NekoTrackEvent.TrackEventType;
@@ -10,9 +12,9 @@ import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.timgroup.statsd.NoOpStatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
-import gg.amy.singyeong.QueryBuilder;
 import gg.amy.singyeong.SingyeongClient;
-import gg.amy.singyeong.SingyeongType;
+import gg.amy.singyeong.client.SingyeongType;
+import gg.amy.singyeong.client.query.QueryBuilder;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -34,6 +36,7 @@ public final class Nekomimi {
     private static final String USER_ID = System.getenv("CLIENT_ID");
     @Getter
     private final AudioPlayerManager playerManager = new DefaultAudioPlayerManager();
+    @Getter
     private final Vertx vertx = Vertx.vertx();
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Set<String> guilds = new HashSet<>();
@@ -80,89 +83,67 @@ public final class Nekomimi {
             final JsonObject payload = dispatch.data();
             switch(payload.getString("type")) {
                 case "VOICE_JOIN": {
-                    final String guildId = payload.getString("guild_id");
+                    final var voiceJoin = payload.mapTo(VoiceJoin.class);
                     final Member member = MagmaMember.builder()
-                            .guildId(guildId)
+                            .guildId(voiceJoin.guildId())
                             .userId(USER_ID)
                             .build();
                     final ServerUpdate serverUpdate = MagmaServerUpdate.builder()
-                            .sessionId(payload.getString("session_id"))
-                            .endpoint(payload.getString("endpoint"))
-                            .token(payload.getString("token"))
+                            .sessionId(voiceJoin.sessionId())
+                            .endpoint(voiceJoin.endpoint())
+                            .token(voiceJoin.token())
                             .build();
                     
                     logger.info("Got voice join to {} {}", member, serverUpdate);
                     magma.provideVoiceServerUpdate(member, serverUpdate);
                     
-                    guilds.add(guildId);
+                    guilds.add(voiceJoin.guildId());
                     singyeong.updateMetadata("guilds", SingyeongType.LIST, new JsonArray(new ArrayList<>(guilds)));
                     
                     statsClient.gauge("activeVcs", guilds.size());
                     
-                    queues.putIfAbsent(guildId, new NekoTrackQueue(guildId));
+                    queues.putIfAbsent(voiceJoin.guildId(), new NekoTrackQueue(voiceJoin.guildId()));
                     break;
                 }
                 case "VOICE_LEAVE": {
-                    final String guildId = payload.getString("guild_id");
+                    final var voiceLeave = payload.mapTo(VoiceLeave.class);
                     final Member member = MagmaMember.builder()
-                            .guildId(guildId)
+                            .guildId(voiceLeave.guildId())
                             .userId(USER_ID)
                             .build();
                     logger.info("Got voice leave for {}", member);
                     magma.removeSendHandler(member);
                     magma.closeConnection(member);
-                    guilds.remove(guildId);
+                    guilds.remove(voiceLeave.guildId());
                     statsClient.gauge("activeVcs", guilds.size());
                     singyeong.updateMetadata("guilds", SingyeongType.LIST, new JsonArray(new ArrayList<>(guilds)));
                     break;
                 }
                 case "VOICE_QUEUE": {
-                    final NekoTrackContext ctx = payload.getJsonObject("context").mapTo(NekoTrackContext.class);
-                    if(payload.containsKey("search")) {
-                        final String url = payload.getString("search");
-                        logger.debug("Got search queue: " + url);
-                        playerManager.loadItem("ytsearch:" + url, new NekoTrackLoader(this, ctx, true));
-                    } else if(payload.containsKey("url")) {
-                        final String url = payload.getString("url");
+                    final var voiceQueue = payload.mapTo(VoiceQueue.class);
+                    final NekoTrackContext ctx = voiceQueue.context();
+                    if(voiceQueue.search() != null) {
+                        final String search = voiceQueue.search();
+                        logger.debug("Got search queue: " + search);
+                        playerManager.loadItem("ytsearch:" + search, new NekoTrackLoader(this, ctx, true));
+                    } else {
+                        final String url = voiceQueue.url();
                         logger.debug("Got url queue: " + url);
                         playerManager.loadItem(url, new NekoTrackLoader(this, ctx, false));
                     }
                     break;
                 }
                 case "VOICE_PLAY": {
-                    final String guildId = payload.getString("guild_id");
-                    playNextInQueue(guildId);
+                    final var voicePlay = payload.mapTo(VoicePlay.class);
+                    playNextInQueue(voicePlay.guildId());
                     break;
                 }
                 case "VOICE_SKIP": {
-                    final String guildId = payload.getString("guild_id");
-                    final NekoTrackQueue queue = queues.get(guildId);
+                    final var voiceSkip = payload.mapTo(VoiceSkip.class);
+                    final NekoTrackQueue queue = queues.get(voiceSkip.guildId());
                     if(queue.currentAudioTrack() != null) {
-                        playNextInQueue(guildId);
+                        playNextInQueue(voiceSkip.guildId());
                     }
-                    break;
-                }
-                case "VOICE_NOW_PLAYING": {
-                    final NekoTrackContext ctx = payload.getJsonObject("context").mapTo(NekoTrackContext.class);
-                    final String guildId = payload.getString("guild_id");
-                    final NekoTrackQueue queue = queues.computeIfAbsent(guildId, __ -> new NekoTrackQueue(guildId));
-                    NekoTrack currentTrack = queue.currentTrack();
-                    if(queue.currentAudioTrack() != null) {
-                        // Backfill a bit of data
-                        currentTrack = currentTrack.toBuilder()
-                                .position(queue.currentAudioTrack().getPosition())
-                                .context(ctx)
-                                .build();
-                    } else {
-                        currentTrack = NekoTrack.builder()
-                                .context(ctx)
-                                .build();
-                    }
-                    singyeong.send("backend", new QueryBuilder().build(),
-                            new JsonObject()
-                                    .put("type", TrackEventType.AUDIO_TRACK_NOW_PLAYING.name())
-                                    .put("data", new NekoTrackEvent(TrackEventType.AUDIO_TRACK_NOW_PLAYING, currentTrack)
-                                            .toJson()));
                     break;
                 }
                 default: {
@@ -172,6 +153,7 @@ public final class Nekomimi {
             }
         });
         
+        new Api(this).setup();
         singyeong.connect()
                 .thenAccept(__ -> logger.info("Welcome to nekomimi!"));
     }
@@ -200,7 +182,7 @@ public final class Nekomimi {
             final NekoTrack track = queue.nextTrack();
             playerManager.loadItem(track.url(), new NekoPlayerLoader(this, track));
         } else if(currentTrack != null) {
-            singyeong.send("backend", new QueryBuilder().build(),
+            singyeong.send(new QueryBuilder().target("backend").build(),
                     new JsonObject()
                             .put("type", TrackEventType.AUDIO_QUEUE_END.name())
                             .put("data", new NekoTrackEvent(TrackEventType.AUDIO_QUEUE_END,
