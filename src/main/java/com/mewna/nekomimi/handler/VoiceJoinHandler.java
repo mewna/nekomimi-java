@@ -8,10 +8,10 @@ import io.vertx.core.json.JsonArray;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import space.npstr.magma.MagmaMember;
-import space.npstr.magma.MagmaServerUpdate;
-import space.npstr.magma.Member;
-import space.npstr.magma.ServerUpdate;
+import space.npstr.magma.api.MagmaMember;
+import space.npstr.magma.api.MagmaServerUpdate;
+import space.npstr.magma.api.Member;
+import space.npstr.magma.api.ServerUpdate;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -36,16 +36,16 @@ public class VoiceJoinHandler implements Consumer<VoiceJoin> {
                 .endpoint(voiceJoin.endpoint())
                 .token(voiceJoin.token())
                 .build();
-    
+        
         logger.info("Got voice join to {} {}", member, serverUpdate);
         nekomimi.magma().provideVoiceServerUpdate(member, serverUpdate);
-    
+        
         nekomimi.guilds().add(voiceJoin.guildId());
         nekomimi.singyeong().updateMetadata("guilds", SingyeongType.LIST,
                 new JsonArray(new ArrayList<>(nekomimi.guilds())));
-    
+        
         nekomimi.statsClient().gauge("activeVcs", nekomimi.guilds().size());
-    
+        
         nekomimi.queues().putIfAbsent(voiceJoin.guildId(), new NekoTrackQueue(voiceJoin.guildId()));
     }
 }

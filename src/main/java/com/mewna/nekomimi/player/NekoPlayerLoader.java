@@ -1,8 +1,8 @@
 package com.mewna.nekomimi.player;
 
+import com.mewna.nekomimi.Nekomimi;
 import com.mewna.nekomimi.io.NekoSendHandler;
 import com.mewna.nekomimi.track.NekoTrack;
-import com.mewna.nekomimi.Nekomimi;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
@@ -13,7 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import space.npstr.magma.MagmaMember;
+import space.npstr.magma.api.MagmaMember;
 
 /**
  * @author amy

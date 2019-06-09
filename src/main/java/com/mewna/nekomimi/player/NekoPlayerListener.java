@@ -1,9 +1,9 @@
 package com.mewna.nekomimi.player;
 
+import com.mewna.nekomimi.Nekomimi;
 import com.mewna.nekomimi.track.NekoTrack;
 import com.mewna.nekomimi.track.NekoTrackEvent;
 import com.mewna.nekomimi.track.NekoTrackEvent.TrackEventType;
-import com.mewna.nekomimi.Nekomimi;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
@@ -14,7 +14,7 @@ import io.vertx.core.json.JsonObject;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
-import space.npstr.magma.MagmaMember;
+import space.npstr.magma.api.MagmaMember;
 
 /**
  * @author amy

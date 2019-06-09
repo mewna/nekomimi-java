@@ -23,8 +23,9 @@ import lombok.Getter;
 import lombok.experimental.Accessors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import space.npstr.magma.MagmaApi;
-import space.npstr.magma.MagmaMember;
+import space.npstr.magma.MagmaFactory;
+import space.npstr.magma.api.MagmaApi;
+import space.npstr.magma.api.MagmaMember;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -97,7 +98,7 @@ public final class Nekomimi {
     
     private void start() {
         AudioSourceManagers.registerRemoteSources(playerManager);
-        magma = MagmaApi.of(__ -> new NativeAudioSendFactory());
+        magma = MagmaFactory.of(__ -> new NativeAudioSendFactory());
         
         singyeong = SingyeongClient.create(vertx, System.getenv("SINGYEONG_DSN"));
         
